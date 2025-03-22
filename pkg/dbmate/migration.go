@@ -67,7 +67,7 @@ var (
 	whitespaceRegExp      = regexp.MustCompile(`\s+`)
 	optionSeparatorRegExp = regexp.MustCompile(`:`)
 	blockDirectiveRegExp  = regexp.MustCompile(`^--\s*migrate:(up|down)`)
-	separatorRegExp       = regexp.MustCompile(`(?m)^\s*--\s*migrate:separator\s*$`)
+	querySeparatorRegExp  = regexp.MustCompile(`(?m)\s*;--\s*$`)
 )
 
 // Error codes
@@ -211,12 +211,17 @@ func substring(s string, begin, end int) string {
 
 func splitSQLStatements(content string) []string {
 	var stmts []string
-	if separatorRegExp.MatchString(content) {
+	if querySeparatorRegExp.MatchString(content) {
 		prefix := blockDirectiveRegExp.FindString(content)
 		content = blockDirectiveRegExp.ReplaceAllString(content, "")
-		blocks := separatorRegExp.Split(content, -1)
+		blocks := querySeparatorRegExp.Split(content, -1)
+		lenBlocks := len(blocks)
 		for i, block := range blocks {
-			block = fmt.Sprintf("%s:%d\n%s\n", prefix, i, strings.TrimSpace(block))
+			semicolon := ";"
+			if lenBlocks == i + 1 {
+				semicolon = ""
+			}
+			block = fmt.Sprintf("%s:%d\n%s%s\n", prefix, i, strings.TrimSpace(block), semicolon)
 			if block != "" {
 				stmts = append(stmts, block)
 			}

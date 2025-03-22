@@ -205,12 +205,10 @@ func TestParseSeparated(t *testing.T) {
 	fs := fstest.MapFS{
 		"bar/123_foo.sql": {
 			Data: []byte(`-- migrate:up
-create table users (id serial, name text);
--- migrate:separator
+create table users (id serial, name text);--
 create table roles (id serial, name text);
 -- migrate:down
-drop table users;
--- migrate:separator
+drop table users;--
 drop table roles;
 `),
 		},
